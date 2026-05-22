@@ -1,0 +1,1 @@
+export const EMPLOYMENT_TYPE = ["full-time", "contract", "part-time", "internship"] as const

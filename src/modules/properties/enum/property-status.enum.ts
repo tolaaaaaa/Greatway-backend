@@ -1,0 +1,1 @@
+export const PROPERTY_STATUS = ["listed", "unlisted", "sold"] as const
