@@ -8,7 +8,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 @Injectable()
 export class PropertyFeaturesService implements IService<PropertyFeature> {
   constructor(
-    @InjectRepository(PropertyFeature) private featureRepository: Repository<PropertyFeature>,
+    @InjectRepository(PropertyFeature)
+    private featureRepository: Repository<PropertyFeature>,
   ) {}
 
   async create(
@@ -26,11 +27,19 @@ export class PropertyFeaturesService implements IService<PropertyFeature> {
     throw new Error('Method not implemented.');
   }
 
+  async findAll(
+    filter: FindOptionsWhere<PropertyFeature>,
+  ): Promise<PropertyFeature[]> {
+    return await this.featureRepository.find({ where: filter });
+  }
+
   async findById(id: string): Promise<PropertyFeature | null> {
     return await this.featureRepository.findOne({ where: { id } });
   }
 
-  async findOne(filter: FindOptionsWhere<PropertyFeature>): Promise<PropertyFeature | null> {
+  async findOne(
+    filter: FindOptionsWhere<PropertyFeature>,
+  ): Promise<PropertyFeature | null> {
     return await this.featureRepository.findOne({ where: filter });
   }
 

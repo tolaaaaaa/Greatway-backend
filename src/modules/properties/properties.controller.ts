@@ -157,6 +157,7 @@ export class PropertiesController {
       [
         { name: 'images', maxCount: 4 },
         { name: 'video', maxCount: 1 },
+        { name: 'salesImage', maxCount: 1 },
       ],
       { ...memoryUpload, fileFilter: mediaFilter },
     ),
@@ -166,42 +167,10 @@ export class PropertiesController {
     @Body(new JoiValidationPipe(updatePropertySchema))
     updatePropertyDto: UpdatePropertyDto,
     @UploadedFiles()
-    files: { images?: CustomFile[]; video?: CustomFile[] },
+    files: { images?: CustomFile[]; video?: CustomFile[], salesImage?: CustomFile[] },
   ) {
     const property = await this.propertiesService.findById(id);
     if (!property) throw new NotFoundException('Property not found');
-
-    // ── Features ────────────────────────────────────────────────────────────────
-    if (updatePropertyDto.features) {
-      for (const feature of updatePropertyDto.features) {
-        if (feature.id) {
-          const existingFeature = await this.propertyFeaturesService.findOne({
-            id: feature.id,
-            property: { id },
-          });
-
-          if (existingFeature) {
-            await this.propertyFeaturesService.update(existingFeature, {
-              description: feature.description,
-              icon: feature.icon,
-            });
-          } else {
-            await this.propertyFeaturesService.create({
-              description: feature.description,
-              icon: feature.icon,
-              propertyId: id,
-            });
-          }
-        } else {
-          await this.propertyFeaturesService.create({
-            description: feature.description,
-            icon: feature.icon,
-            propertyId: id,
-          });
-        }
-      }
-      delete updatePropertyDto.features;
-    }
 
     // ── Images ──────────────────────────────────────────────────────────────────
     if (files.images?.length) {
@@ -243,6 +212,24 @@ export class PropertiesController {
       updatePropertyDto.videoUrl = newVideoUrl;
     }
 
+    const salesImageFile = files.salesImage?.[0];
+    if (salesImageFile) {
+      const newSalesImageUrl = await this.fileSystem.upload({
+        destination: `images/properties/${salesImageFile.originalname}.${salesImageFile.extension}`,
+        mimetype: salesImageFile.mimetype,
+        buffer: salesImageFile.buffer,
+        filePath: salesImageFile.path,
+      });
+      updatePropertyDto.saleSupportAvatar = newSalesImageUrl;
+      if (property.saleSupportAvatar) {
+        await this.fileSystem
+          .delete(property.saleSupportAvatar)
+          .catch((err) => {
+            console.warn('Could not delete old sales support image:', err);
+          });
+      }
+    }
+
     return this.propertiesService.update(property, updatePropertyDto);
   }
 
@@ -251,9 +238,9 @@ export class PropertiesController {
     @Body(new JoiValidationPipe(updatePropertySchema))
     updatePropertyDto: UpdatePropertyDto,
     @Param('id', ParseUUIDPipe) id: string,
-    @Req() req: Request & { user: User }
+    @Req() req: Request & { user: User },
   ) {
-    const user = req.user
+    const user = req.user;
     const property = await this.propertiesService.findById(id);
     if (!property) throw new NotFoundException('Property does not exist');
 
@@ -261,18 +248,22 @@ export class PropertiesController {
       status: updatePropertyDto.status,
     });
 
-
-    await this.trailsService.create(`${user.fullName} updated ${property.title} to ${updatePropertyDto.status}`)
+    await this.trailsService.create(
+      `${user.fullName} updated ${property.title} to ${updatePropertyDto.status}`,
+    );
 
     return update;
   }
 
   @Delete(':id')
   @DeletePropertySwagger()
-  async remove(@Param('id', ParseUUIDPipe) id: string,  @Req() req: Request & { user: User }) {
+  async remove(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Req() req: Request & { user: User },
+  ) {
     const property = await this.propertiesService.findById(id);
     if (!property) throw new NotFoundException('Property not found');
-    const user = req.user
+    const user = req.user;
 
     await Promise.all(
       [
@@ -284,7 +275,9 @@ export class PropertiesController {
     );
 
     const deletedProperty = await this.propertiesService.remove({ id });
-    await this.trailsService.create(`${user.fullName} deleted a property named ${property.title}`)
-    return deletedProperty
+    await this.trailsService.create(
+      `${user.fullName} deleted a property named ${property.title}`,
+    );
+    return deletedProperty;
   }
 }
