@@ -25,6 +25,7 @@ import {
 } from './docs/career.docs';
 import { CareersInterceptor } from './interceptor/careers.interceptor';
 import { CareerInterceptor } from './interceptor/career.interceptor';
+import { Public } from '../auth/decorators/public.decorator';
 
 @Controller('careers')
 export class CareersController {
@@ -48,6 +49,7 @@ export class CareersController {
   }
 
   @Get()
+  @Public()
   @FindAllCareersSwagger()
   @UseInterceptors(CareersInterceptor)
   findAll(@Query() query: ICareersQuery) {
