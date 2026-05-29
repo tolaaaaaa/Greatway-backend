@@ -21,13 +21,18 @@ import { PropertyFeaturesModule } from './modules/property-features/property-fea
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import filesystemsConfig from './config/filesystems.config';
 import { JwtGuard } from './modules/auth/guard/jwt-auth.guard';
+import { NotificationModule } from './modules/notification/notification.module';
+import mailConfig from './config/mail.config';
+import redisConfig from './config/redis.config';
+import { QueuesModule } from './queues';
 
 @Module({
   imports: [
     TypeOrmModule.forRootAsync(databaseConfigAsync),
+    QueuesModule,
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [appConfig, authConfig, swaggerConfig, filesystemsConfig],
+      load: [appConfig, authConfig, swaggerConfig, filesystemsConfig, mailConfig, redisConfig],
     }),
     UsersModule,
     AuthModule,
@@ -38,6 +43,7 @@ import { JwtGuard } from './modules/auth/guard/jwt-auth.guard';
     GalleriesModule,
     PropertyFeaturesModule,
     AnalyticsModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [

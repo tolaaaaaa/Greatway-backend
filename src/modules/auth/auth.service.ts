@@ -37,7 +37,6 @@ export class AuthService {
   async validateUser(loginDto: LoginDto) {
     const user = await this.userService.findOne({
       email: loginDto.email.toLowerCase(),
-      status: "active"
     });
 
     if (!user) throw new NotFoundException('Invalid Credentials');
@@ -45,6 +44,8 @@ export class AuthService {
     const match = await user.comparePassword(loginDto.password);
 
     if (!match) throw new BadRequestException('Invalid Credentials');
+
+    if (user.status != "active") throw new BadRequestException("User is inactive, contact support")
 
     return user;
   }

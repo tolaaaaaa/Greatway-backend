@@ -6,9 +6,10 @@ import { JwtModule, JwtService } from '@nestjs/jwt';
 import { jwtConfig } from 'src/config/jwt.config';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { PasswordStrategy } from './strategies/password.strategy';
+import { NotificationModule } from '../notification/notification.module';
 
 @Module({
-  imports: [UsersModule, JwtModule.registerAsync(jwtConfig)],
+  imports: [UsersModule, JwtModule.registerAsync(jwtConfig), NotificationModule],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, PasswordStrategy, JwtService],
 })

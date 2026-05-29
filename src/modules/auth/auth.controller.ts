@@ -21,6 +21,10 @@ import { PasswordAuthGuard } from './guard/password-auth.guard';
 import { UnAuthorizedException } from 'src/exceptions/unAuthorized.exception';
 import { ForbiddenException } from 'src/exceptions/forbidden.exception';
 import { AuthInterceptor } from './interceptor/auth.interceptor';
+import { MailService } from 'src/services/mail';
+import { AdminRegisteredNotification } from 'src/mails/adminRegister';
+import { NotificationService } from '../notification/notification.service';
+import { AdminNotification } from '../notification/services/admin-notification';
 
 @Controller('auth')
 export class AuthController {
@@ -29,6 +33,8 @@ export class AuthController {
     private usersSevice: UsersService,
     private helperService: HelpersService,
     private configService: ConfigService,
+    private mailService: MailService,
+    private notificationService: NotificationService,
   ) {}
 
   @Public()
@@ -40,11 +46,11 @@ export class AuthController {
 
     if (user) throw new ConflictException('User Exist');
 
-    authDto.role = "admin"
+    authDto.role = 'admin';
 
     const createUser = await this.usersSevice.create({
       ...authDto,
-      status: "active"
+      status: 'inactive',
     });
 
     const token = await this.helperService.generateToken(
@@ -55,6 +61,36 @@ export class AuthController {
       this.configService.get<IAuth>('auth')!.jwtSecret,
       '1d',
     );
+
+    const superAdmin = await this.usersSevice.findOne({
+      role: 'super_admin',
+    });
+
+    if (superAdmin) {
+      this.mailService
+        .send(
+          new AdminRegisteredNotification(
+            superAdmin.email,
+            createUser.fullName,
+            createUser.email,
+          ),
+        )
+        .catch((error) => {
+          console.error('Failed to send admin registration mail:', error);
+        });
+
+      this.notificationService
+        .send(
+          { id: superAdmin.id },
+          new AdminNotification(createUser.fullName, createUser.email),
+        )
+        .catch((error) => {
+          console.error(
+            'Failed to send admin registration notification:',
+            error,
+          );
+        });
+    }
     return { token };
   }
 
@@ -67,8 +103,6 @@ export class AuthController {
     @Body(new JoiValidationPipe(loginSchema)) loginDto: LoginDto,
   ) {
     const user = req.user;
-
-    if (user.status === 'inactive') throw new UnAuthorizedException();
 
     if (user.role === 'user')
       throw new ForbiddenException(

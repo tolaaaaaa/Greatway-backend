@@ -8,6 +8,8 @@ import {
   Delete,
   Query,
   UseInterceptors,
+  ParseUUIDPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto, createUserSchema } from './dto/create-user.dto';
@@ -18,6 +20,9 @@ import { NotFoundException } from 'src/exceptions/notfound.exception';
 import type { IUsersQuery } from './interface/query-filter';
 import { UsersInterceptor } from './interceptor/users.interceptor';
 import { UserInterceptor } from './interceptor/user.interceptor';
+import { RolesGuard } from '../auth/guard/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { user_role } from './enum/user-role';
 
 @Controller('users')
 export class UsersController {
@@ -53,12 +58,23 @@ export class UsersController {
 
   @Patch(':id')
   @UseInterceptors(UserInterceptor)
-  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  async update(@Param('id', ParseUUIDPipe) id: string, @Body() updateUserDto: UpdateUserDto) {
     const user = await this.usersService.findById(id);
 
     if (!user) throw new NotFoundException('User not found');
 
     return this.usersService.update(user, updateUserDto);
+  }
+
+  @UseGuards(RolesGuard)
+  @Roles(user_role.super_admin)
+  @Patch(':id/status')
+  async updateStatus(@Param('id', ParseUUIDPipe) id: string, @Body() updateUserDto: UpdateUserDto) {
+     const user = await this.usersService.findById(id);
+
+    if (!user) throw new NotFoundException('User not found');
+
+    return this.usersService.update(user, {status: updateUserDto.status});
   }
 
   @Delete(':id')
