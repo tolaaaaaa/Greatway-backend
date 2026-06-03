@@ -10,6 +10,7 @@ import {
   UseInterceptors,
   ParseUUIDPipe,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto, createUserSchema } from './dto/create-user.dto';
@@ -23,6 +24,7 @@ import { UserInterceptor } from './interceptor/user.interceptor';
 import { RolesGuard } from '../auth/guard/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { user_role } from './enum/user-role';
+import { ForbiddenException } from 'src/exceptions/forbidden.exception';
 
 @Controller('users')
 export class UsersController {
@@ -78,7 +80,12 @@ export class UsersController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id') id: string, @Req() req: Request & { user: Express.User }) {
+    const user = req.user
+    if (user.id !== id && user.role !== "super_admin") {
+        throw new ForbiddenException("Access denied: missing the required role")
+    }
+
     return this.usersService.remove({ id });
   }
 }

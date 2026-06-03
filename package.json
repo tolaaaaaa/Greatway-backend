@@ -22,7 +22,9 @@
     "migration:generate": "ts-node db/generate-migration.ts",
     "migration:drop": "typeorm-ts-node-commonjs schema:drop -d ./db/typeorm.config.ts",
     "migration:revert": "typeorm-ts-node-commonjs migration:revert -d ./db/typeorm.config.ts",
-    "migration:migrate": "typeorm-ts-node-commonjs migration:run -d ./db/typeorm.config.ts"
+    "migration:migrate": "typeorm-ts-node-commonjs migration:run -d ./db/typeorm.config.ts",
+    "seed": "nest build && node dist/src/seeder",
+    "seed:refresh": "node dist/src/seeder --refresh"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1037.0",
@@ -46,6 +48,7 @@
     "generate-password-ts": "^1.6.5",
     "helmet": "^8.1.0",
     "joi": "^18.1.2",
+    "nestjs-seeder": "^0.3.2",
     "nodemailer": "^8.0.9",
     "passport-google-oauth2": "^0.2.0",
     "passport-jwt": "^4.0.1",
