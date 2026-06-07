@@ -13,8 +13,10 @@ export class UserSeeder implements Seeder {
 
   async seed(): Promise<any> {
     try {
+      const seedEmail = 'olanitori00@gmail.com';
+
       const findUser = await this.userRepository.findOne({
-        where: { email: 'greatwayproperties26@gmail.com' },
+        where: { email: seedEmail },
       });
 
       if (findUser) {
@@ -23,9 +25,9 @@ export class UserSeeder implements Seeder {
       }
 
       const seedUser = this.userRepository.create({
-        email: 'olanitori00@gmail.com',
+        email: seedEmail,
         password: 'Password123!',
-        fullName: 'greatway properties',
+        fullName: 'Greatway Properties',
         status: 'active',
         role: 'super_admin',
       });
@@ -40,6 +42,10 @@ export class UserSeeder implements Seeder {
   }
 
   async drop(): Promise<any> {
-    await this.userRepository.deleteAll();
+    try {
+      await this.userRepository.clear();
+    } catch (error) {
+      console.error('Failed to drop users:', error);
+    }
   }
 }
