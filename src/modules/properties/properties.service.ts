@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreatePropertyDto } from './dto/create-property.dto';
 import { UpdatePropertyDto } from './dto/update-property.dto';
 import { Property } from './entities/property.entity';
-import { EntityManager, FindOptionsWhere, Repository } from 'typeorm';
+import { Between, EntityManager, FindOptionsWhere, ILike, LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IPropertiesQuery } from './interface/query-filter.interface';
 
@@ -32,17 +32,34 @@ export class PropertiesService implements IService<Property> {
   }
 
   find(query: IPropertiesQuery): Promise<[Property[], number]> {
-    const { page = 1, limit = 10, location, status } = query;
+    const { page = 1, limit = 10, location, status, minPrice, maxPrice, search, sortBy, sortOrder } = query;
 
-    const where: FindOptionsWhere<Property> = {};
-    if (location) where.location = location;
-    if (status) where.status = status
+    const where: any = {};
+    if (location) where.location = ILike(`%${location}%`);
+    if (status) where.status = status;
+
+    // price filters using TypeORM FindOperators
+    if (minPrice !== undefined && maxPrice !== undefined) {
+      where.salesPrice = Between(minPrice, maxPrice);
+    } else if (minPrice !== undefined) {
+      where.salesPrice = MoreThanOrEqual(minPrice);
+    } else if (maxPrice !== undefined) {
+      where.salesPrice = LessThanOrEqual(maxPrice);
+    }
+
+    // build where option to support OR (search) or single where
+    const whereOption = search
+      ? [
+          { ...where, title: ILike(`%${search}%`) },
+          { ...where, description: ILike(`%${search}%`) },
+        ]
+      : where;
 
     return this.propertyRepository.findAndCount({
-      where,
+      where: whereOption,
       skip: (Number(page) - 1) * Number(limit),
       take: Number(limit),
-      order: { createdAt: 'DESC' },
+      order: { [sortBy || 'createdAt']: sortOrder || 'DESC' },
       relations: { features: true },
     });
   }
