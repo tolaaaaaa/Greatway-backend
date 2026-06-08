@@ -14,7 +14,7 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto, createUserSchema } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateUserDto, updateUserSchema } from './dto/update-user.dto';
 import { JoiValidationPipe } from 'src/validation/joi.validation';
 import { ConflictException } from 'src/exceptions/conflict.exception';
 import { NotFoundException } from 'src/exceptions/notfound.exception';
@@ -60,7 +60,7 @@ export class UsersController {
 
   @Patch(':id')
   @UseInterceptors(UserInterceptor)
-  async update(@Param('id', ParseUUIDPipe) id: string, @Body() updateUserDto: UpdateUserDto) {
+  async update(@Param('id', ParseUUIDPipe) id: string, @Body(new JoiValidationPipe(updateUserSchema)) updateUserDto: UpdateUserDto) {
     const user = await this.usersService.findById(id);
 
     if (!user) throw new NotFoundException('User not found');
@@ -71,7 +71,7 @@ export class UsersController {
   @UseGuards(RolesGuard)
   @Roles(user_role.super_admin)
   @Patch(':id/status')
-  async updateStatus(@Param('id', ParseUUIDPipe) id: string, @Body() updateUserDto: UpdateUserDto) {
+  async updateStatus(@Param('id', ParseUUIDPipe) id: string, @Body(new JoiValidationPipe(updateUserSchema)) updateUserDto: UpdateUserDto) {
      const user = await this.usersService.findById(id);
 
     if (!user) throw new NotFoundException('User not found');
