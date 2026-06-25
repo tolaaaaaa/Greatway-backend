@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { HelpersService } from 'src/services/utils/helpers/helpers.service';
@@ -11,6 +11,8 @@ import { DateService } from 'src/services/utils/date/date.service';
 import { Otp } from './entity/otp.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { BadReqException } from 'src/exceptions/badRequest.exception';
+import { UnAuthorizedException } from 'src/exceptions/unAuthorized.exception';
 
 @Injectable()
 export class AuthService {
@@ -49,7 +51,17 @@ export class AuthService {
 
     if (!match) throw new BadRequestException('Invalid Credentials');
 
-    if (user.status != "active") throw new BadRequestException("User is inactive, contact support")
+    if (!user.isEmailVerified) {
+      throw new UnAuthorizedException(
+        'Please verify your email to continue',
+      );
+    }
+
+    if (user.status !== 'active') {
+      throw new BadReqException(
+        'Your account has been deactivated, contact support',
+      );
+    }
 
     return user;
   }

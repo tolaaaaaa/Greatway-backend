@@ -115,7 +115,7 @@ export class AuthController {
     if (!user) throw new UnAuthorizedException("User not found");
 
 
-    await this.usersSevice.update(user, { status: "active" });
+    await this.usersSevice.update(user, { status: "active", isEmailVerified: true });
     return {
       message: "email verified"
     }
@@ -165,7 +165,7 @@ export class AuthController {
       '30m',
     );
 
-    const url = `${clientUrl}/forgot-password?token=${token}`
+    const url = `${clientUrl}/reset-password?token=${token}`
 
     await this.mailService.queue(new ForgotPasswordMail(user.email, user.fullName, url));
     return {

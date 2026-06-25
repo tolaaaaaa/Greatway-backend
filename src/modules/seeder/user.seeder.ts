@@ -20,6 +20,10 @@ export class UserSeeder implements Seeder {
       });
 
       if (findUser) {
+        if (!findUser.isEmailVerified) {
+          const merge = this.userRepository.merge(findUser, {isEmailVerified: true})
+          await this.userRepository.save(merge)
+        }
         console.log('User already exists, skipping seed.');
         return;
       }
@@ -30,6 +34,7 @@ export class UserSeeder implements Seeder {
         fullName: 'Greatway Properties',
         status: 'active',
         role: 'super_admin',
+        isEmailVerified: true
       });
 
       await this.userRepository.save(seedUser);

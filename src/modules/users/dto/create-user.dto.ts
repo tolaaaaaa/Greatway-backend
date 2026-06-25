@@ -7,6 +7,7 @@ export class CreateUserDto {
     fullName?: string
     phoneNumber?: string
     email!: string
+    isEmailVerified?: boolean
     status?: UserStatus
     password!: string
     createdAt?: Date

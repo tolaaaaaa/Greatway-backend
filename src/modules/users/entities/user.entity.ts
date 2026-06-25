@@ -37,6 +37,9 @@ export class User {
   @Column({type: 'enum', enum: USER_ROLE, default: "user"})
   role!: UserRole
 
+  @Column({type: 'boolean', default: false})
+  isEmailVerified!: boolean
+
   @CreateDateColumn()
   createdAt!: Date;
 
