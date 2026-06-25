@@ -17,6 +17,7 @@ import { MAIL_STRATEGY } from './entities/strategies';
 import { SmtpMailStrategy } from './strategies/smtp.service';
 import { ResendMailStrategy } from './strategies/resend.service';
 import { Mailable } from './mailables/mailable';
+import { MailQueueProducer } from './queue/queue-producer.service';
 
 /**
  * Core MailService.
@@ -32,6 +33,7 @@ export class MailService implements IMailService {
   constructor(
     @Inject(CONFIG_OPTIONS)
     protected options: MailModuleOptions,
+     private readonly mailQueue: MailQueueProducer,
     @Inject(MAIL_STRATEGY.smtp)
     private readonly smtpMailService: SmtpMailStrategy,
     @Inject(MAIL_STRATEGY.resend)
@@ -59,10 +61,11 @@ export class MailService implements IMailService {
   }
 
   /**
-   * Send immediately instead of queuing using the default transporter.
+   * Queue a Mailable for later sending using the default transporter.
    */
   async queue(mail: Mailable): Promise<void> {
-    await this.send(mail);
+     const options = this.clients[this.default]
+    await this.mailQueue.dispatch(options.transport, mail, options.queueOptions)
   }
 
   /**

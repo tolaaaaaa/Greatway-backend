@@ -38,6 +38,7 @@ export type SmtpMailOptions = QueueConfig & {
   transport: 'smtp';
   host: string;
   port: number;
+  secure?: boolean;
   url?: string;
   encryption?: 'ssl' | 'tls' | 'starttls';
   auth: {

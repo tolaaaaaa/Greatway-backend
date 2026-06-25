@@ -49,6 +49,7 @@ export class MailModule {
       ],
       exports: [
         MailService,
+        MailQueueProducer,
         CONFIG_OPTIONS,
         MAIL_STRATEGY.smtp,
         MAIL_STRATEGY.resend,
@@ -88,6 +89,7 @@ export class MailModule {
       ],
       exports: [
         MailService,
+        MailQueueProducer,
         CONFIG_OPTIONS,
         MAIL_STRATEGY.smtp,
         MAIL_STRATEGY.resend,

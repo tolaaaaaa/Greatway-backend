@@ -14,6 +14,23 @@ export class LoginDto {
   password!: string;
 }
 
+export class VerifyEmailDto {
+  code!: string
+}
+
+export class ForgotPasswordDto {
+  email!: string
+}
+
+export class ChangePasswordDto {
+  password!: string
+  confirmPassword!: string
+}
+
+export class ResendOtpDto {
+  email!: string
+}
+
 export class LoginAuthDto {
   email!: string
   id!: string
@@ -47,3 +64,24 @@ export const loginSchema = joi.object({
     .required(),
   password: joi.string().required(),
 });
+
+
+export const verifyEmailSchema = joi.object({
+  code: joi.string().required()
+})
+
+export const forgotPasswordSchema = joi.object({
+  email: joi.string().email().required()
+})
+
+export const changePasswordSchema = joi.object({
+  password: joi.string().min(8).required(),
+  confirmPassword: joi.string().valid(joi.ref('password')).required().messages({
+    'any.only': 'Passwords do not match',
+  }),
+});
+
+
+export const resendOtpSchema = joi.object({
+  email: joi.string().required()
+})

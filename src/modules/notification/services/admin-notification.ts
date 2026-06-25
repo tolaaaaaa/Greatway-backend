@@ -15,7 +15,7 @@ export class AdminNotification extends Notification {
 
   public toDatabase(): Record<string, unknown> {
     return {
-      message: `New admin ${this.adminName} has registered and is pending activation.`,
+      message: `New admin ${this.adminName} has registered.`,
       adminName: this.adminName,
       adminEmail: this.adminEmail,
     };

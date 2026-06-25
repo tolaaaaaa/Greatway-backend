@@ -8,6 +8,9 @@ import { User } from '../users/entities/user.entity';
 import { IAuth } from 'src/config/auth.config';
 import { NotFoundException } from 'src/exceptions/notfound.exception';
 import { DateService } from 'src/services/utils/date/date.service';
+import { Otp } from './entity/otp.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class AuthService {
@@ -17,7 +20,8 @@ export class AuthService {
     private dateService: DateService,
     private configService: ConfigService,
     private jwtService: JwtService,
-  ) {}
+    @InjectRepository(Otp) private otpRepository: Repository<Otp>
+  ) { }
 
   async login(loginDto: LoginAuthDto) {
     const payload = { email: loginDto.email, id: loginDto.id };
@@ -54,5 +58,32 @@ export class AuthService {
     const user = await this.userService.findOne({ email: email.toLowerCase() });
     if (!user) return null;
     return user;
+  }
+
+  async createOtp(email: string): Promise<Otp> {
+    const code = this.helperService.generateOtp(6);
+    const expiresAt = this.dateService.addMinutes(20);
+    const otp = this.otpRepository.create({
+      email,
+      code,
+      expiresAt,
+    });
+    return this.otpRepository.save(otp);
+  }
+
+  async findOtp(code: string) {
+    const otp = await this.otpRepository.findOne({ where: { code } });
+    return otp;
+  }
+
+  async findOtpEmail(email: string) {
+    const otp = await this.otpRepository.findOne({ where: { email: email } })
+
+    return otp
+  }
+
+  async deleteOtp(code: string) {
+    const result = await this.otpRepository.delete({ code });
+    return result.affected || 0;
   }
 }
