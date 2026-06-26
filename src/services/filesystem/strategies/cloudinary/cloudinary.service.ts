@@ -22,7 +22,7 @@ export class CloudinaryStrategy implements FilesystemStrategy {
           const uploadFromBuffer = (file: FileUploadDto): Promise<string> => {
             return new Promise((resolve, reject) => {
               const uploadStream = cloudinary.uploader.upload_stream(
-                { resource_type: file.mimetype.startsWith("video") ? "video" : file.mimetype.startsWith("image") ? "image" : "raw" },
+                { resource_type: file.mimetype.startsWith("video") ? "video" : file.mimetype.startsWith("image") ? "image" : "raw", public_id: file.destination },
                 (error, result) => {
                   if (error) {
                     reject(error)
@@ -43,13 +43,14 @@ export class CloudinaryStrategy implements FilesystemStrategy {
       }
 
       const result = await cloudinary.uploader.upload(file.filePath!, {
-        resource_type: file.mimetype.startsWith("video") ? "video" : file.mimetype.startsWith("image") ? "image" : "raw"
+        resource_type: file.mimetype.startsWith("video") ? "video" : file.mimetype.startsWith("image") ? "image" : "raw",
+        public_id: file.destination
       })
 
       fs.unlinkSync(file.filePath!)
       return result.secure_url
     } catch (error) {
-      throw new HttpException(`Failed to upload file to Cloudinary`, 500, {cause: error})
+      throw new HttpException(`Failed to upload file to Cloudinary`, 500, { cause: error })
     }
   }
 
@@ -114,7 +115,7 @@ export class CloudinaryStrategy implements FilesystemStrategy {
 
       return content
     } catch (error) {
-      throw new HttpException(`Failed to zip folder`, 500, {cause: error})
+      throw new HttpException(`Failed to zip folder`, 500, { cause: error })
     }
   }
 
@@ -125,9 +126,10 @@ export class CloudinaryStrategy implements FilesystemStrategy {
 
   async delete(publicId: string): Promise<void> {
     try {
-      await cloudinary.uploader.destroy(publicId, { resource_type: "image" })
+      await cloudinary.uploader.destroy(publicId, { resource_type: "" });
     } catch (error) {
-      throw new HttpException(`Failed to delete file from Cloudinary`, 500, {cause: error})
+      console.log(error)
+      throw new HttpException(`Failed to delete file from Cloudinary`, 500, { cause: error })
     }
   }
 

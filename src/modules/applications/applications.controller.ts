@@ -9,12 +9,16 @@ import { docsImageFilter, memoryUpload } from 'src/config/multer.config';
 import { BadReqException } from 'src/exceptions/badRequest.exception';
 import { FileSystemService } from 'src/services/filesystem/filesystem.service';
 import { CareersService } from '../careers/careers.service';
+import { ApplicationInterceptor } from './interceptor/application.interceptor';
+import { ApplicationsInterceptor } from './interceptor/applications.interceptor';
+import { Public } from '../auth/decorators/public.decorator';
 
 @Controller('applications')
 export class ApplicationsController {
   constructor(private readonly applicationsService: ApplicationsService, private fileSystemService: FileSystemService, private careersService: CareersService) { }
 
   @Post()
+  @Public()
   @UseInterceptors(FileFieldsInterceptor([
     { name: 'resume', maxCount: 1 },
     { name: 'coverLetter', maxCount: 1 },
@@ -34,7 +38,7 @@ export class ApplicationsController {
 
 
     const resumeUrl = await this.fileSystemService.upload({
-      destination: `resume/${resumeUpload.originalname}.${resumeUpload.extension}`,
+      destination: `resume/${resumeUpload.originalname}`,
       mimetype: resumeUpload.mimetype,
       buffer: resumeUpload.buffer,
       filePath: resumeUpload.path
@@ -44,24 +48,27 @@ export class ApplicationsController {
     const coverLetterUpload = files.coverLetter?.[0];
     if (coverLetterUpload) {
       coverLetterUrl = await this.fileSystemService.upload({
-        destination: `cover-letter/${coverLetterUpload.originalname}.${coverLetterUpload.extension}`,
+        destination: `cover-letter/${coverLetterUpload.originalname}`,
         mimetype: coverLetterUpload.mimetype,
         buffer: coverLetterUpload.buffer,
         filePath: coverLetterUpload.path,
       });
     }
 
+
     createApplicationDto.resume = resumeUrl,
-      createApplicationDto.coverletter = coverLetterUrl
+      createApplicationDto.coverLetter = coverLetterUrl
     return this.applicationsService.create(createApplicationDto);
   }
 
   @Get()
+  @UseInterceptors(ApplicationsInterceptor)
   findAll(@Query() query: IApplicationsQuery) {
     return this.applicationsService.find(query);
   }
 
   @Get(':id')
+  @UseInterceptors(ApplicationInterceptor)
   async findOne(@Param('id') id: string) {
     const application = await this.applicationsService.findById(id);
     if (!application) throw new NotFoundException("Application does not exists")
@@ -79,6 +86,10 @@ export class ApplicationsController {
   async remove(@Param('id') id: string) {
     const application = await this.applicationsService.findById(id)
     if (!application) throw new NotFoundException("Application does not exists")
+    if (application.coverLetter) {
+      await this.fileSystemService.delete(application.coverLetter)
+    }
+    await this.fileSystemService.delete(application.resume)
     return this.applicationsService.remove({ id });
   }
 }

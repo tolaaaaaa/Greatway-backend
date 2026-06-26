@@ -12,6 +12,9 @@ export class ApplicationsService implements IService<Application> {
     @InjectRepository(Application) private applicationRepository: Repository<Application>,
   ) {}
 
+
+  private relation = ['job']
+
   async create(data: CreateApplicationDto & { resume: string; coverLetter?: string }, manager?: EntityManager): Promise<Application> {
     const repo = manager
       ? manager.getRepository<Application>(Application)
@@ -28,6 +31,7 @@ export class ApplicationsService implements IService<Application> {
 
     return this.applicationRepository.findAndCount({
       where,
+      relations: this.relation,
       skip: (Number(page) - 1) * Number(limit),
       take: Number(limit),
       order: { createdAt: 'DESC' },
@@ -35,11 +39,11 @@ export class ApplicationsService implements IService<Application> {
   }
 
   async findById(id: string): Promise<Application | null> {
-    return await this.applicationRepository.findOne({ where: { id } });
+    return await this.applicationRepository.findOne({ where: { id }, relations: this.relation });
   }
 
   async findOne(filter: FindOptionsWhere<Application>): Promise<Application | null> {
-    return await this.applicationRepository.findOne({ where: filter });
+    return await this.applicationRepository.findOne({ where: filter, relations: this.relation });
   }
 
   async exists(filter: FindOptionsWhere<Application>): Promise<boolean> {

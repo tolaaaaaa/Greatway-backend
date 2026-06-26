@@ -7,7 +7,7 @@ export class CreateApplicationDto {
     jobId!: string
     phoneNumber!: string
     resume!: string
-    coverletter?: string
+    coverLetter?: string
     startDate!: Date
 }
 
