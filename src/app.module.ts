@@ -26,6 +26,7 @@ import mailConfig from './config/mail.config';
 import redisConfig from './config/redis.config';
 import { QueuesModule } from './queues';
 import { ApplicationsModule } from './modules/applications/applications.module';
+import { BookingsModule } from './modules/bookings/bookings.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { ApplicationsModule } from './modules/applications/applications.module';
     AnalyticsModule,
     NotificationModule,
     ApplicationsModule,
+    BookingsModule,
   ],
   controllers: [AppController],
   providers: [
