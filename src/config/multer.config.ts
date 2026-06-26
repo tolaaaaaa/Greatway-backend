@@ -288,7 +288,7 @@ export function docsImageFilter(
   if (!isAllowedExtension || !isAllowedMime) {
     return callback(
       new ApiException(
-        'Invalid file type. Allowed: images (jpg, jpeg, png, gif, webp), PDF, DOCX, XLSX, CSV',
+        'Invalid file type. Allowed: images or pdfs or docx (jpg, jpeg, png, gif, webp), PDF, DOCX, XLSX, CSV',
         HttpStatus.UNSUPPORTED_MEDIA_TYPE,
       ),
       false,
