@@ -7,6 +7,8 @@ export abstract class BookingResponseMapper implements IInterceptor {
       id: data.id,
       firstName: data.firstName,
       lastName: data.lastName,
+      declineReason: data?.declineReason,
+      status: data.status,
       email: data.email,
       location: data.location,
       inspectionDate: data.inspectionDate,

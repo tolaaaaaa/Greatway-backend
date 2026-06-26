@@ -1,4 +1,5 @@
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { BOOKING_STATUS } from "../enum/booking-status.enun";
 
 @Entity()
 export class Booking {
@@ -12,6 +13,9 @@ export class Booking {
     lastName!: string
 
     @Column()
+    phoneNumber!: string
+
+    @Column()
     email!: string
 
     @Column()
@@ -23,8 +27,14 @@ export class Booking {
     @Column()
     inspectionTime!: Date
 
-    @Column({type: "text", nullable: true})
+    @Column({ type: "text", nullable: true })
     message?: string
+
+    @Column({ type: "enum", enum: BOOKING_STATUS, default: BOOKING_STATUS.PENDING })
+    status!: BOOKING_STATUS
+
+    @Column({ type: "text", nullable: true })
+    declineReason?: string
 
     @CreateDateColumn()
     createdAt!: Date
