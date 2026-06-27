@@ -9,7 +9,7 @@ export interface IBookingResponse {
   status: BOOKING_STATUS
   location: string;
   inspectionDate: Date;
-  inspectionTime: Date;
+  inspectionTime: string;
   message: string | null;
   createdAt: Date;
   updatedAt: Date;

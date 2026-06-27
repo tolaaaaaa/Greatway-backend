@@ -4,7 +4,7 @@ import { Booking } from '../entities/booking.entity';
 import { IBookingsResponse } from '../interface/bookings-response.interface';
 import { IBookingResponse } from '../interface/booking-response.interface';
 import { PaginationParams, PaginationService } from 'src/services/pagination';
-import { BookingResponseMapper } from '../interface/booking--response-mapper.inteface';
+import { BookingResponseMapper } from '../interface/booking-response-mapper.inteface';
 
 type Payload = [Booking[], number];
 

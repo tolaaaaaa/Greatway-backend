@@ -2,7 +2,7 @@ import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nes
 import { map, Observable } from 'rxjs';
 import { Booking } from '../entities/booking.entity';
 import { IBookingResponse } from '../interface/booking-response.interface';
-import { BookingResponseMapper } from '../interface/booking--response-mapper.inteface';
+import { BookingResponseMapper } from '../interface/booking-response-mapper.inteface';
 
 @Injectable()
 export class BookingInterceptor

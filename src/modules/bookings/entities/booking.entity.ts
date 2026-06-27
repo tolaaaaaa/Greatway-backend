@@ -25,7 +25,7 @@ export class Booking {
     inspectionDate!: Date
 
     @Column()
-    inspectionTime!: Date
+    inspectionTime!: string
 
     @Column({ type: "text", nullable: true })
     message?: string

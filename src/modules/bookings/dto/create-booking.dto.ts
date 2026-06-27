@@ -10,7 +10,7 @@ export class CreateBookingDto {
   inspectionDate!: Date;
   status?: BOOKING_STATUS;
   declineReason?: string;
-  inspectionTime!: Date;
+  inspectionTime!: string
   message?: string;
 }
 
@@ -21,6 +21,6 @@ export const createBookingSchema = joi.object({
   email: joi.string().email().trim().lowercase().required(),
   location: joi.string().trim().min(2).max(200).required(),
   inspectionDate: joi.date().iso().greater("now").required(),
-  inspectionTime: joi.date().iso().required(),
+  inspectionTime: joi.string().pattern(/^([01]\d|2[0-3]):([0-5]\d)$/).required(),
   message: joi.string().trim().max(1000).optional(),
 });

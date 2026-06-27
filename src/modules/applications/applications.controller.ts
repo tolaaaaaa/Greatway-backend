@@ -12,10 +12,23 @@ import { CareersService } from '../careers/careers.service';
 import { ApplicationInterceptor } from './interceptor/application.interceptor';
 import { ApplicationsInterceptor } from './interceptor/applications.interceptor';
 import { Public } from '../auth/decorators/public.decorator';
+import { MailService } from 'src/services/mail';
+import { NotificationService } from '../notification/notification.service';
+import { NewApplicationNotification } from '../notification/services/application.notification';
+import { ApplicationConfirmationMail } from 'src/mails/applicationConfirmation';
+import { AdminApplicationNotificationMail } from 'src/mails/adminApplicationNotification';
+import { UsersService } from '../users/users.service';
 
 @Controller('applications')
 export class ApplicationsController {
-  constructor(private readonly applicationsService: ApplicationsService, private fileSystemService: FileSystemService, private careersService: CareersService) { }
+  constructor(
+    private readonly applicationsService: ApplicationsService,
+    private fileSystemService: FileSystemService,
+    private careersService: CareersService,
+    private mailService: MailService,
+    private notificationService: NotificationService,
+    private usersService: UsersService
+  ) { }
 
   @Post()
   @Public()
@@ -58,7 +71,43 @@ export class ApplicationsController {
 
     createApplicationDto.resume = resumeUrl,
       createApplicationDto.coverLetter = coverLetterUrl
-    return this.applicationsService.create(createApplicationDto);
+    const application = await this.applicationsService.create(createApplicationDto);
+
+    const notification = new NewApplicationNotification(
+      application.fullName,
+      application.email,
+      job.title,
+      job.companyName,
+    );
+
+    this.mailService.queue(new ApplicationConfirmationMail(application, job.title, job.companyName)).catch((err) => {
+      console.error('Failed to send application confirmation email:', err);
+    });
+
+    const superAdmin = await this.usersService.findOne({ role: 'super_admin' });
+    if (superAdmin) {
+      this.mailService.queue(new AdminApplicationNotificationMail(superAdmin.email, application, job.title, job.companyName)).catch((err) => {
+        console.error('Failed to send super admin application notification email:', err);
+      });
+
+      this.notificationService.send({ id: superAdmin.id }, notification).catch((err) => {
+        console.error('Failed to send super admin in-app notification:', err);
+      });
+    }
+
+
+    const [admins] = await this.usersService.find({ role: 'admin' });
+    for (const admin of admins) {
+      this.mailService.queue(new AdminApplicationNotificationMail(admin.email, application, job.title, job.companyName)).catch((err) => {
+        console.error(`Failed to send admin application notification email to ${admin.email}:`, err);
+      });
+
+      this.notificationService.send({ id: admin.id }, notification).catch((err) => {
+        console.error(`Failed to send admin in-app notification to ${admin.id}:`, err);
+      });
+    }
+
+    return application;
   }
 
   @Get()

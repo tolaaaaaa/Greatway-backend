@@ -8,7 +8,7 @@ export class UpdateBookingDto {
   email?: string;
   location?: string;
   inspectionDate?: Date;
-  inspectionTime?: Date;
+  inspectionTime?: string;
   message?: string;
 }
 export const updateBookingSchema = createBookingSchema.fork(
