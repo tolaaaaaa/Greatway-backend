@@ -27,6 +27,7 @@ import redisConfig from './config/redis.config';
 import { QueuesModule } from './queues';
 import { ApplicationsModule } from './modules/applications/applications.module';
 import { BookingsModule } from './modules/bookings/bookings.module';
+import { ContactUsModule } from './modules/contact-us/contact-us.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { BookingsModule } from './modules/bookings/bookings.module';
     NotificationModule,
     ApplicationsModule,
     BookingsModule,
+    ContactUsModule,
   ],
   controllers: [AppController],
   providers: [
